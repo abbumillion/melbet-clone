@@ -8,7 +8,8 @@ import java.time.Instant;
 @Entity
 @Table(name = "matches", indexes = {
         @Index(name = "idx_matches_status", columnList = "status"),
-        @Index(name = "idx_matches_league", columnList = "league")
+        @Index(name = "idx_matches_league", columnList = "league"),
+        @Index(name = "idx_matches_sport", columnList = "sport")
 })
 @Getter
 @Setter
@@ -21,8 +22,9 @@ public class Match {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 64)
-    private String sport;              // FOOTBALL, BASKETBALL, TENNIS
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
+    private SportType sport;
 
     @Column(nullable = false, length = 128)
     private String league;
@@ -41,6 +43,24 @@ public class Match {
 
     @Column(nullable = false)
     private int minute;
+
+    // Sport-specific period label: "Q3", "Set 2", "Round 8", "45'"
+    @Column(length = 32)
+    private String period;
+
+    // For tennis: sets won
+    @Column(nullable = false)
+    private int homeSets;
+
+    @Column(nullable = false)
+    private int awaySets;
+
+    // For eSports: maps won
+    @Column(nullable = false)
+    private int homeMaps;
+
+    @Column(nullable = false)
+    private int awayMaps;
 
     @Column(nullable = false, length = 16)
     private String status;             // PRE_MATCH, LIVE, HT, FT
