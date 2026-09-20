@@ -69,8 +69,21 @@ public class MatchSeeder implements CommandLineRunner {
             away = league.teams().get(random.nextInt(league.teams().size()));
         } while (away.equals(home));
 
-        long offset = random.nextInt(spreadMinutes) - 5; // some in past (→ live), some future
+               // Bias toward future matches so more are pre-match with visible odds
+        long offset;
+        double roll = random.nextDouble();
+        if (roll < 0.20) {
+            // 20% already started (→ live or finished)
+            offset = -(random.nextInt(60) + 1);
+        } else if (roll < 0.40) {
+            // 20% kick off very soon (→ live shortly)
+            offset = random.nextInt(5);
+        } else {
+            // 60% in the future (→ pre-match, odds visible)
+            offset = 10 + random.nextInt(240);
+        }
         Instant startTime = Instant.now().plus(Duration.ofMinutes(offset));
+       
 
         double homeStrength = random.nextDouble();
         double[] odds = oddsGenerator.generate1X2Odds(homeStrength);

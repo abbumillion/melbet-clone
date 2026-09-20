@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
+import MobileHeader from './components/MobileHeader'
 import IconRail from './components/IconRail'
 import BetSlip from './components/BetSlip'
 import MatchFilters from './components/MatchFilters'
+import MobileFilterBar from './components/MobileFilterBar'
+import PromoCarousel from './components/PromoCarousel'
+import BottomNav from './components/BottomNav'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -20,26 +24,47 @@ function SportsLayout() {
   const [query, setQuery] = useState('')
 
   return (
-    <div className="flex">
-      <IconRail active={activeIcon} onChange={setActiveIcon} />
-      <div className="flex-1 min-w-0">
-        <MatchFilters
-          tab={tab} setTab={setTab}
-          sport={sport} setSport={setSport}
-          liveOnly={liveOnly} setLiveOnly={setLiveOnly}
-          query={query} setQuery={setQuery}
+    <>
+      {/* MOBILE */}
+      <div className="md:hidden pb-20">
+        <PromoCarousel />
+        <MobileFilterBar
+          liveOnly={liveOnly}
+          setLiveOnly={setLiveOnly}
+          query={query}
+          setQuery={setQuery}
         />
         <Home selectedSport={sport} liveOnly={liveOnly} query={query} />
       </div>
-      <BetSlip />
-    </div>
+
+      {/* DESKTOP */}
+      <div className="hidden md:flex">
+        <IconRail active={activeIcon} onChange={setActiveIcon} />
+        <div className="flex-1 min-w-0">
+          <MatchFilters
+            tab={tab} setTab={setTab}
+            sport={sport} setSport={setSport}
+            liveOnly={liveOnly} setLiveOnly={setLiveOnly}
+            query={query} setQuery={setQuery}
+          />
+          <Home selectedSport={sport} liveOnly={liveOnly} query={query} />
+        </div>
+        <BetSlip />
+      </div>
+    </>
   )
 }
 
 export default function App() {
   return (
     <div className="min-h-screen bg-[#0b1220]">
-      <Header />
+      {/* Desktop header */}
+      <div className="hidden md:block">
+        <Header />
+      </div>
+      {/* Mobile header */}
+      <MobileHeader />
+
       <Routes>
         <Route path="/"      element={<SportsLayout />} />
         <Route path="/live"  element={<SportsLayout />} />
@@ -50,6 +75,8 @@ export default function App() {
         <Route path="/help"     element={<Help />} />
         <Route path="/about"    element={<About />} />
       </Routes>
+
+      <BottomNav />
     </div>
   )
 }
