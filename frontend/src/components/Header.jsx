@@ -1,5 +1,18 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { Globe, ChevronDown, Menu } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+
+const NAV = [
+  { label: 'SPORTS',     to: '/' },
+  { label: 'LIVE',       to: '/live', live: true },
+  { label: 'FAST GAMES', to: '/' },
+  { label: 'CASINO',     to: '/' },
+  { label: 'LIVE CASINO',to: '/' },
+  { label: 'ESPORTS',    to: '/' },
+  { label: 'PROMOTIONS', to: '/' },
+  { label: 'BINGO',      to: '/' },
+  { label: 'MORE',       to: '/' },
+]
 
 export default function Header() {
   const { isAuthed, email, logout } = useAuth()
@@ -11,58 +24,95 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-[#0f1a2e] border-b border-[#1e2a44] sticky top-0 z-20">
-      <div className="max-w-[1400px] mx-auto flex items-center justify-between px-4 h-14">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-black text-[#ffb800]">MEL</span>
-            <span className="text-2xl font-black text-white">BET</span>
+    <div className="sticky top-0 z-30">
+      {/* Top yellow bar */}
+      <div className="bg-[#ffb800] text-black">
+        <div className="flex items-center justify-between h-11 px-3">
+          {/* Logo */}
+          <Link to="/" className="flex items-end gap-0.5 select-none">
+            <span className="text-2xl font-black tracking-tight">MEL</span>
+            <span className="text-2xl font-black tracking-tight">BET</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-gray-300">
-            <Link to="/" className="hover:text-white">Sports</Link>
-            <Link to="/live" className="hover:text-white flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-              Live
-            </Link>
-            <Link to="/help" className="hover:text-white">Help</Link>
-            <Link to="/about" className="hover:text-white">About</Link>
-          </nav>
-        </div>
 
-        <div className="flex items-center gap-3">
-          {isAuthed ? (
-            <>
-              <Link
-                to="/settings"
-                className="text-sm text-gray-300 hover:text-white"
-              >
-                {email}
-              </Link>
+          {/* Center mini-icons (decorative) */}
+          <div className="hidden lg:flex items-center gap-1">
+            {['🏔', '🎰', '🍎', '⚡', '🎁', '🎬'].map((e) => (
               <button
-                onClick={handleLogout}
-                className="text-sm px-4 py-2 rounded bg-[#1e2a44] hover:bg-[#2a3a5c] text-white"
+                key={e}
+                className="w-8 h-8 rounded bg-[#1a1a1a]/10 hover:bg-black/10 text-base"
               >
-                Logout
+                {e}
               </button>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                className="text-sm px-4 py-2 rounded border border-[#2a3a5c] text-white hover:bg-[#1e2a44]"
-              >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="text-sm px-4 py-2 rounded bg-[#ffb800] text-black font-semibold hover:bg-[#ffc93a]"
-              >
-                Sign Up
-              </Link>
-            </>
-          )}
+            ))}
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            <button className="hidden md:flex items-center gap-1 text-xs bg-black/10 hover:bg-black/20 rounded px-2 py-1.5">
+              <Globe size={14} />
+              <span>EN</span>
+              <ChevronDown size={12} />
+            </button>
+            <span className="hidden md:inline text-xs font-medium">
+              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+
+            {isAuthed ? (
+              <>
+                <Link
+                  to="/settings"
+                  className="text-xs px-3 py-2 rounded font-semibold bg-black/10 hover:bg-black/20"
+                >
+                  {email}
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-xs px-3 py-2 rounded font-semibold bg-black text-white hover:bg-gray-900"
+                >
+                  LOG OUT
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/signup"
+                  className="text-xs px-3 py-2 rounded font-bold bg-[#1a1a1a] text-[#ffb800] hover:bg-black"
+                >
+                  REGISTRATION
+                </Link>
+                <Link
+                  to="/login"
+                  className="text-xs px-3 py-2 rounded font-bold bg-[#1a1a1a] text-[#ffb800] hover:bg-black"
+                >
+                  LOG IN
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </header>
+
+      {/* Dark nav strip */}
+      <div className="bg-[#131d33] border-b border-[#1e2a44]">
+        <div className="flex items-center gap-1 h-9 px-2 overflow-x-auto">
+          <button className="p-2 text-gray-400 hover:text-white">
+            <Menu size={16} />
+          </button>
+          {NAV.map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold tracking-wide text-[#ffb800] hover:text-white whitespace-nowrap"
+            >
+              {item.live && (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              )}
+              {item.label}
+              <ChevronDown size={11} className="opacity-70" />
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }

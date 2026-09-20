@@ -2,13 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import client from '../api/client'
 import LeagueSection from '../components/LeagueSection'
 
-export default function Home({ selectedSport }) {
+export default function Home({ selectedSport, liveOnly, query }) {
   const [matches, setMatches] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
-
     const load = async () => {
       try {
         const { data } = await client.get('/matches')
@@ -19,19 +18,26 @@ export default function Home({ selectedSport }) {
         if (!cancelled) setLoading(false)
       }
     }
-
     load()
     const interval = setInterval(load, 10_000)
-    return () => {
-      cancelled = true
-      clearInterval(interval)
-    }
+    return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
   const filtered = useMemo(() => {
-    if (selectedSport === 'ALL') return matches
-    return matches.filter((m) => m.sport === selectedSport)
-  }, [matches, selectedSport])
+    let list = matches
+    if (selectedSport !== 'ALL') list = list.filter((m) => m.sport === selectedSport)
+    if (liveOnly) list = list.filter((m) => m.status === 'LIVE' || m.status === 'HT')
+    if (query?.trim()) {
+      const q = query.toLowerCase()
+      list = list.filter(
+        (m) =>
+          m.homeTeam.toLowerCase().includes(q) ||
+          m.awayTeam.toLowerCase().includes(q) ||
+          m.league.toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [matches, selectedSport, liveOnly, query])
 
   const grouped = useMemo(() => {
     const map = new Map()
@@ -43,28 +49,14 @@ export default function Home({ selectedSport }) {
     return Array.from(map.values())
   }, [filtered])
 
-  if (loading) {
-    return (
-      <div className="p-8 text-gray-400">Loading matches...</div>
-    )
-  }
-
-  if (grouped.length === 0) {
-    return (
-      <div className="p-8 text-gray-400">
-        No matches available for this sport right now.
-      </div>
-    )
-  }
+  if (loading) return <div className="p-8 text-gray-400 text-sm">Loading matches...</div>
+  if (grouped.length === 0)
+    return <div className="p-8 text-gray-400 text-sm">No matches for this filter.</div>
 
   return (
-    <div className="p-4">
-      {grouped.map((group) => (
-        <LeagueSection
-          key={group.league}
-          league={group.league}
-          matches={group.matches}
-        />
+    <div>
+      {grouped.map((g) => (
+        <LeagueSection key={g.league} league={g.league} matches={g.matches} />
       ))}
     </div>
   )
