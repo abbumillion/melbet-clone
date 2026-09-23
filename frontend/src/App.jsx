@@ -1,3 +1,4 @@
+import Footer from './components/Footer'
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
@@ -15,17 +16,16 @@ import Verify from './pages/Verify'
 import Help from './pages/Help'
 import About from './pages/About'
 import Settings from './pages/Settings'
-
 function SportsLayout() {
   const [activeIcon, setActiveIcon] = useState('home')
   const [tab, setTab] = useState('Matches')
   const [sport, setSport] = useState('ALL')
   const [liveOnly, setLiveOnly] = useState(false)
   const [query, setQuery] = useState('')
+  const [slipCollapsed, setSlipCollapsed] = useState(false)
 
   return (
     <>
-      {/* MOBILE */}
       <div className="md:hidden pb-20">
         <PromoCarousel />
         <MobileFilterBar
@@ -37,7 +37,6 @@ function SportsLayout() {
         <Home selectedSport={sport} liveOnly={liveOnly} query={query} />
       </div>
 
-      {/* DESKTOP */}
       <div className="hidden md:flex">
         <IconRail active={activeIcon} onChange={setActiveIcon} />
         <div className="flex-1 min-w-0">
@@ -49,12 +48,14 @@ function SportsLayout() {
           />
           <Home selectedSport={sport} liveOnly={liveOnly} query={query} />
         </div>
-        <BetSlip />
+        <BetSlip
+          collapsed={slipCollapsed}
+          onToggle={() => setSlipCollapsed((v) => !v)}
+        />
       </div>
     </>
   )
 }
-
 export default function App() {
   return (
     <div className="min-h-screen bg-[#0b1220]">
@@ -77,6 +78,7 @@ export default function App() {
       </Routes>
 
       <BottomNav />
+<Footer />
     </div>
   )
 }

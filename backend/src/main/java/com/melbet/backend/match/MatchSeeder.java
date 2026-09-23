@@ -28,62 +28,70 @@ public class MatchSeeder implements CommandLineRunner {
 
         int seeded = 0;
 
-        // FOOTBALL — 4 leagues × 4 matches
+        // --- FOOTBALL (Priority: Africa first, then Global) ---
         for (LeagueTeams league : FOOTBALL_LEAGUES) {
-            for (int i = 0; i < 4; i++) {
-                seeded += seedMatch(league, 30);
+            for (int i = 0; i < 3; i++) {
+                seeded += seedMatch(league, 180);
             }
         }
 
-        // BASKETBALL
+        // --- BASKETBALL ---
         for (LeagueTeams league : BASKETBALL_LEAGUES) {
             for (int i = 0; i < 3; i++) {
-                seeded += seedMatch(league, 60);
+                seeded += seedMatch(league, 90);
             }
         }
 
-        // TENNIS — player vs player
-        for (int i = 0; i < 8; i++) {
-            seeded += seedMatch(TENNIS_LEAGUE, 45);
+        // --- TENNIS ---
+        for (int i = 0; i < 6; i++) {
+            seeded += seedMatch(TENNIS_LEAGUE, 120);
         }
 
-        // ATHLETICS — events
+        // --- ICE HOCKEY (New) ---
+        for (LeagueTeams league : HOCKEY_LEAGUES) {
+            for (int i = 0; i < 2; i++) {
+                seeded += seedMatch(league, 120);
+            }
+        }
+
+        // --- VOLLEYBALL (New) ---
         for (int i = 0; i < 4; i++) {
-            seeded += seedMatch(ATHLETICS_LEAGUE, 20);
+            seeded += seedMatch(VOLLEYBALL_LEAGUE, 120);
         }
 
-        // ESPORTS
+        // --- ESPORTS ---
         for (LeagueTeams league : ESPORTS_LEAGUES) {
-            for (int i = 0; i < 3; i++) {
-                seeded += seedMatch(league, 40);
+            for (int i = 0; i < 2; i++) {
+                seeded += seedMatch(league, 90);
             }
         }
 
-        log.info("Seeded {} matches across multiple sports", seeded);
+        log.info("Seeded {} matches across multiple sports and leagues.", seeded);
     }
 
     private int seedMatch(LeagueTeams league, int spreadMinutes) {
+        if (league.teams().size() < 2) return 0;
+
         String home = league.teams().get(random.nextInt(league.teams().size()));
         String away;
+        int attempts = 0;
         do {
             away = league.teams().get(random.nextInt(league.teams().size()));
-        } while (away.equals(home));
+            attempts++;
+        } while (away.equals(home) && attempts < 10);
 
-               // Bias toward future matches so more are pre-match with visible odds
+        if (away.equals(home)) return 0; // Could not find a valid opponent
+
         long offset;
         double roll = random.nextDouble();
         if (roll < 0.20) {
-            // 20% already started (→ live or finished)
-            offset = -(random.nextInt(60) + 1);
+            offset = -(random.nextInt(60) + 1); // Live/Finished
         } else if (roll < 0.40) {
-            // 20% kick off very soon (→ live shortly)
-            offset = random.nextInt(5);
+            offset = random.nextInt(5); // Starting soon
         } else {
-            // 60% in the future (→ pre-match, odds visible)
-            offset = 10 + random.nextInt(240);
+            offset = 10 + random.nextInt(spreadMinutes); // Future
         }
         Instant startTime = Instant.now().plus(Duration.ofMinutes(offset));
-       
 
         double homeStrength = random.nextDouble();
         double[] odds = oddsGenerator.generate1X2Odds(homeStrength);
@@ -116,7 +124,28 @@ public class MatchSeeder implements CommandLineRunner {
 
     private record LeagueTeams(String name, SportType sport, List<String> teams) {}
 
+    // ============================================
+    // FOOTBALL LEAGUES
+    // ============================================
     private static final List<LeagueTeams> FOOTBALL_LEAGUES = List.of(
+            // --- AFRICA / REGIONAL (Priority) ---
+            new LeagueTeams("Africa Cup of Nations", SportType.FOOTBALL, List.of(
+                    "Ethiopia", "Sudan", "Egypt", "Morocco", "Nigeria", "Ghana",
+                    "Senegal", "Ivory Coast", "Cameroon", "Algeria", "Tunisia", "South Africa")),
+            new LeagueTeams("Ethiopian Premier League", SportType.FOOTBALL, List.of(
+                    "Saint George", "Fasil Kenema", "Sidama Bunna", "Mekelle 70 Enderta",
+                    "Wolaitta Dicha", "Adama City", "Hawassa City", "Dire Dawa City")),
+            new LeagueTeams("Kenyan Premier League", SportType.FOOTBALL, List.of(
+                    "Gor Mahia", "Tusker", "AFC Leopards", "Bandari",
+                    "KCB", "Sofapaka", "Kariobangi Sharks", "Wazito")),
+            new LeagueTeams("Egyptian Premier League", SportType.FOOTBALL, List.of(
+                    "Al Ahly", "Zamalek", "Pyramids FC", "Ismaily",
+                    "Al Masry", "Ceramica Cleopatra", "Future FC", "Smouha")),
+            new LeagueTeams("CAF Champions League", SportType.FOOTBALL, List.of(
+                    "Al Ahly", "Wydad Casablanca", "Mamelodi Sundowns", "ES Tunis",
+                    "Simba SC", "CR Belouizdad", "TP Mazembe", "Al Hilal")),
+
+            // --- EUROPEAN TOP LEAGUES ---
             new LeagueTeams("Premier League", SportType.FOOTBALL, List.of(
                     "Manchester United", "Liverpool", "Arsenal", "Chelsea",
                     "Manchester City", "Tottenham", "Newcastle", "Aston Villa")),
@@ -127,40 +156,70 @@ public class MatchSeeder implements CommandLineRunner {
                     "Juventus", "Inter Milan", "AC Milan", "Napoli",
                     "Roma", "Lazio", "Atalanta", "Fiorentina")),
             new LeagueTeams("Bundesliga", SportType.FOOTBALL, List.of(
-                    "Bayern Munich", "Borussia Dortmund", "RB Leipzig",
-                    "Bayer Leverkusen", "Eintracht Frankfurt", "Wolfsburg",
-                    "Freiburg", "Union Berlin"))
+                    "Bayern Munich", "Borussia Dortmund", "RB Leipzig", "Bayer Leverkusen",
+                    "Eintracht Frankfurt", "Wolfsburg", "Freiburg", "Union Berlin")),
+            new LeagueTeams("Ligue 1", SportType.FOOTBALL, List.of(
+                    "Paris Saint-Germain", "Marseille", "Lyon", "Monaco",
+                    "Lille", "Nice", "Rennes", "Lens")),
+            new LeagueTeams("UEFA Champions League", SportType.FOOTBALL, List.of(
+                    "Real Madrid", "Manchester City", "Bayern Munich", "Paris Saint-Germain",
+                    "Liverpool", "Inter Milan", "Barcelona", "Arsenal"))
     );
 
+    // ============================================
+    // BASKETBALL LEAGUES
+    // ============================================
     private static final List<LeagueTeams> BASKETBALL_LEAGUES = List.of(
             new LeagueTeams("NBA", SportType.BASKETBALL, List.of(
                     "LA Lakers", "Boston Celtics", "Golden State Warriors", "Miami Heat",
-                    "Milwaukee Bucks", "Denver Nuggets", "Phoenix Suns", "Dallas Mavericks",
-                    "New York Knicks", "Philadelphia 76ers")),
+                    "Milwaukee Bucks", "Denver Nuggets", "Phoenix Suns", "Dallas Mavericks")),
             new LeagueTeams("EuroLeague", SportType.BASKETBALL, List.of(
                     "Real Madrid", "Barcelona", "Olympiacos", "Panathinaikos",
                     "Fenerbahce", "Anadolu Efes", "Monaco", "Baskonia"))
     );
 
+    // ============================================
+    // TENNIS
+    // ============================================
     private static final LeagueTeams TENNIS_LEAGUE = new LeagueTeams(
             "ATP Masters", SportType.TENNIS, List.of(
             "Novak Djokovic", "Carlos Alcaraz", "Jannik Sinner", "Daniil Medvedev",
-            "Alexander Zverev", "Stefanos Tsitsipas", "Andrey Rublev", "Casper Ruud",
-            "Taylor Fritz", "Holger Rune", "Hubert Hurkacz", "Alex de Minaur")
+            "Alexander Zverev", "Stefanos Tsitsipas", "Andrey Rublev", "Casper Ruud")
     );
 
-    private static final LeagueTeams ATHLETICS_LEAGUE = new LeagueTeams(
-            "Diamond League", SportType.ATHLETICS, List.of(
-            "Men's Marathon", "Women's 5000m", "Men's 100m Final",
-            "Women's 1500m", "Men's 400m Hurdles", "Women's Long Jump")
+    // ============================================
+    // ICE HOCKEY
+    // ============================================
+    private static final List<LeagueTeams> HOCKEY_LEAGUES = List.of(
+            new LeagueTeams("NHL", SportType.FOOTBALL, List.of( // Reusing FOOTBALL type for odds for now
+                    "Toronto Maple Leafs", "Montreal Canadiens", "Boston Bruins", "New York Rangers",
+                    "Chicago Blackhawks", "Detroit Red Wings", "Edmonton Oilers", "Colorado Avalanche")),
+            new LeagueTeams("KHL", SportType.FOOTBALL, List.of(
+                    "CSKA Moscow", "SKA Saint Petersburg", "Ak Bars Kazan", "Dynamo Moscow",
+                    "Metallurg Magnitogorsk", "Avangard Omsk", "Lokomotiv Yaroslavl", "Salavat Yulaev"))
     );
 
+    // ============================================
+    // VOLLEYBALL
+    // ============================================
+    private static final LeagueTeams VOLLEYBALL_LEAGUE = new LeagueTeams(
+            "FIVB Volleyball Nations League", SportType.FOOTBALL, List.of(
+            "Brazil", "Italy", "Poland", "France", "USA", "Japan",
+            "Serbia", "Argentina", "Germany", "Netherlands")
+    );
+
+    // ============================================
+    // ESPORTS
+    // ============================================
     private static final List<LeagueTeams> ESPORTS_LEAGUES = List.of(
             new LeagueTeams("CS:GO Major", SportType.ESPORTS, List.of(
                     "NAVI", "FaZe Clan", "G2 Esports", "Vitality",
                     "Astralis", "Heroic", "Cloud9", "MOUZ")),
             new LeagueTeams("LoL Worlds", SportType.ESPORTS, List.of(
                     "T1", "Gen.G", "JDG", "BLG", "G2", "Fnatic",
-                    "Team Liquid", "DRX"))
+                    "Team Liquid", "DRX")),
+            new LeagueTeams("Dota 2 - The International", SportType.ESPORTS, List.of(
+                    "Team Spirit", "PSG.LGD", "OG", "Team Secret",
+                    "Virtus.pro", "Tundra Esports", "Entity", "Thunder Awaken"))
     );
 }
