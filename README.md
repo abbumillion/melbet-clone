@@ -3,7 +3,7 @@
 A full-stack clone of a modern sportsbook, built with **Spring Boot 4**, **React 19**, **PostgreSQL**, and **Redis**. Features JWT authentication, OTP email verification, and a real-time match simulation engine covering football, basketball, tennis, athletics, and eSports.
 
 > ⚠️ **Disclaimer:** This is a learning and portfolio project only. No real bets are accepted, and all match data is simulated.
-![Homepage](docs/screenshot-home.png)
+![Homepage](docs/homepage.png)
 ## ✨ Features
 
 **Authentication**
